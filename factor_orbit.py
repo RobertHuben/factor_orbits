@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw
-import random
 from sympy.ntheory.factor_ import factorint
 import numpy as np
+import argparse
 
 def make_frame(n, time):
     image = Image.new("RGB", (400, 400), "black")
@@ -44,12 +44,12 @@ def make_gif(n, num_tics=200):
 
 
 if __name__ == "__main__":
-    # n_set=[2,4,7,10]
-    # n_set=[2,7]
-    n_set=[210]
-    # n_set=[8]
-    # n_set=[135]
-    for n in n_set:
-        # n=2
-        num_tics=500
-        make_gif(n, num_tics)
+
+    parser = argparse.ArgumentParser(description='Create a gif of N dots orbiting each other based on the factorization of N.')
+    parser.add_argument('N', type=int,
+                        help='number of dots in the gif')
+    parser.add_argument('-f', '--frames', type=int, default=500,
+                        help='number of frames in the resulting gif, which changes the perceived speed of the animation')
+
+    args = parser.parse_args()
+    make_gif(n=args.N, num_tics=args.frames)
