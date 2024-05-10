@@ -58,8 +58,8 @@ def make_gif(n:int, num_frames:int=200):
         num_frames: The number of frames to spread the animation over.
     """
     frames = [make_frame(n, i/num_frames) for i in range(num_frames)]
-    frame_one = frames[0]
-    frame_one.save(f"orbit_{n}.gif", format="GIF", append_images=frames[1:],
+    first_frame = frames[0]
+    first_frame.save(f"orbit_{n}.gif", format="GIF", append_images=frames[1:],
                    save_all=True, duration=50, loop=0)
 
 
