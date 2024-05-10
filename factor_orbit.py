@@ -3,7 +3,16 @@ from sympy.ntheory.factor_ import factorint
 import numpy as np
 import argparse
 
-def make_frame(n, time):
+def make_frame(n:int, time:float) -> Image:
+    """ makes one frame of the gif of n orbiting points.
+
+    Args:
+        n: The number of points to animate.
+        time: How far into the animation this frame will be. Should be between 0 and 1, since the animation loops with period 1.
+
+    Returns:
+        image: The PIL image of the points.
+    """
     image = Image.new("RGB", (400, 400), "black")
     draw = ImageDraw.Draw(image)
     center=(200,200)
@@ -33,10 +42,14 @@ def make_frame(n, time):
     return image
 
 
-def make_gif(n, num_tics=200):
-    frames = []
-    for i in range(num_tics):
-        frames.append(make_frame(n, i/num_tics))
+def make_gif(n:int, num_frames:int=200):
+    """ makes a gif of the n points orbiting the center.
+
+    Args:
+        n: The number of points to animate.
+        num_frames: The number of frames to spread the animation over.
+    """
+    frames = [make_frame(n, i/num_frames) for i in range(num_frames)]
     frame_one = frames[0]
     frame_one.save(f"orbit_{n}.gif", format="GIF", append_images=frames[1:],
                    save_all=True, duration=50, loop=0)
@@ -52,4 +65,4 @@ if __name__ == "__main__":
                         help='number of frames in the resulting gif, which changes the perceived speed of the animation')
 
     args = parser.parse_args()
-    make_gif(n=args.N, num_tics=args.frames)
+    make_gif(n=args.N, num_frames=args.frames)
