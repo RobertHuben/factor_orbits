@@ -13,30 +13,38 @@ def make_frame(n:int, time:float) -> Image:
     Returns:
         image: The PIL image of the points.
     """
-    image = Image.new("RGB", (400, 400), "black")
-    draw = ImageDraw.Draw(image)
-    center=(200,200)
+    image_size=400
+    center=(image_size/2,image_size/2)
     point_size=np.array([3,3])
-    base_radius=180
+    final_radius=180 # final image will be scaled to live in a circle with this radius
 
+    image = Image.new("RGB", (image_size, image_size), "black")
+    draw = ImageDraw.Draw(image)
     factors=factorint(n)
-    positions=np.zeros((n,2))
-    max_scale_factor=0
-    this_circle_radius=1
 
+    '''
+    point locations are the sum of epicycles
+    there is one epicycle per factor
+    each epicycle has a different radius and rotational frequency
+    each point within the epicycle has one of p=prime different phase shifts
+    '''
+    point_locations=np.zeros((n,2)) #positions of the points to draw, built up over the method
+    current_scale_factor=1 # radius of the current epicycle
+    epicycle_scale_ratio=2.5 # determines the amount current_scale_factor shrinks by for each epicycle
+    total_scale_factor=0 # running sum of the scaling to do in the final step
     for prime, total_power in factors.items():
         for power in range(1,total_power+1):
-            this_circle_radius/=2.5
-            frequency=(prime**(power))
-            base_offsets=np.arange(prime)/prime
-            offsets=np.tile(np.repeat(base_offsets, frequency//prime), n//frequency)
-            max_scale_factor+=this_circle_radius
-            y_positions=np.sin(2*np.pi*(frequency*time+offsets))
-            x_positions=np.cos(2*np.pi*(frequency*time+offsets))
-            positions+=this_circle_radius*np.stack((x_positions, y_positions), axis=1)
+            current_scale_factor/=epicycle_scale_ratio
+            total_scale_factor+=current_scale_factor
+            orbit_frequency=prime**(power)
+            base_phase_shifts=np.arange(prime)/prime # these will be repeated and tiled to make the phase shifts for all points
+            phase_shifts=np.tile(np.repeat(base_phase_shifts, orbit_frequency//prime), n//orbit_frequency)
+            y_positions=np.sin(2*np.pi*(orbit_frequency*time+phase_shifts))
+            x_positions=np.cos(2*np.pi*(orbit_frequency*time+phase_shifts))
+            point_locations+=current_scale_factor*np.stack((x_positions, y_positions), axis=1)
     
-    positions=(base_radius/max_scale_factor)*positions+center
-    for point in positions:
+    point_locations=(final_radius/total_scale_factor)*point_locations+center # uniformly scale and shift
+    for point in point_locations:
         draw.ellipse((tuple(point-point_size), tuple(point+point_size)), fill=(255, 255, 255, 255))
 
     return image
